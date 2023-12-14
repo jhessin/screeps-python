@@ -1,5 +1,7 @@
 from defs import *
 
+from Actions import Action
+
 __pragma__('noalias', 'name')
 __pragma__('noalias', 'undefined')
 __pragma__('noalias', 'Infinity')
@@ -26,61 +28,25 @@ def run_harvester(creep):
         del creep.memory.target
 
     if creep.memory.filling:
-        # If we have a saved source, use it
-        if creep.memory.source:
-            source = Game.getObjectById(creep.memory.source)
-        else:
-            # Get a random new source and save it
-            source = creep.pos.findClosestByPath(FIND_SOURCES)
-            creep.memory.source = source.id
-
-        # If we're near the source, harvest it - otherwise, move to it.
-        if creep.pos.isNearTo(source):
-            result = creep.harvest(source)
-            if result != OK:
-                print("[{}] Unknown result from creep.harvest({}): {}".format(creep.name, source, result))
-        else:
-            creep.moveTo(source, {'visualizePathStyle': {'stroke': '#ffaa00'}})
+        Action.gather(creep)
     else:
-        # If we have a saved target, use it
-        if creep.memory.target:
-            target = Game.getObjectById(creep.memory.target)
-        else:
-            # Get a random new target.
-            construction_site = creep.pos.findClosestByPath(FIND_CONSTRUCTION_SITES)
+        Action.store(creep)
+def run_builder(creep):
+    """
+    Runs a creep as a generic harvester.
+    :param creep: The creep to run
+    """
 
-            target = construction_site if construction_site else creep.pos.findClosestByPath(FIND_STRUCTURES, {
-                filter: lambda s: (
-                        (
-                                (s.structureType == STRUCTURE_SPAWN or s.structureType == STRUCTURE_EXTENSION)
-                                and s.energy < s.energyCapacity) or s.structureType == STRUCTURE_CONTROLLER)})
-            creep.memory.target = target.id
+    # If we're full, stop filling up and remove the saved source
+    if creep.memory.filling and _.sum(creep.carry) >= creep.carryCapacity:
+        creep.memory.filling = False
+        del creep.memory.source
+    # If we're empty, start filling again and remove the saved target
+    elif not creep.memory.filling and creep.carry.energy <= 0:
+        creep.memory.filling = True
+        del creep.memory.target
 
-        # If we are targeting a spawn or extension, we need to be directly next to it - otherwise, we can be 3 away.
-        if target.energyCapacity:
-            is_close = creep.pos.isNearTo(target)
-        else:
-            is_close = creep.pos.inRangeTo(target, 3)
-
-        if is_close:
-            # If we are targeting a spawn or extension, transfer energy. Otherwise, use upgradeController on it.
-            if target.energyCapacity:
-                result = creep.transfer(target, RESOURCE_ENERGY)
-                if result == OK or result == ERR_FULL:
-                    del creep.memory.target
-                else:
-                    print("[{}] Unknown result from creep.transfer({}, {}): {}".format(
-                        creep.name, target, RESOURCE_ENERGY, result))
-            else:
-                result = creep.upgradeController(target)
-                if result != OK:
-                    # This is not a controller.
-                    result = creep.build(target)
-                    if result != OK:
-                        print("[{}] Unknown result from creep.upgradeController({}): {}".format(
-                            creep.name, target, result))
-                # Let the creeps get a little bit closer than required to the controller, to make room for other creeps.
-                if not creep.pos.inRangeTo(target, 2):
-                    creep.moveTo(target, {'visualizePathStyle': {'stroke': '#ffffff'}})
-        else:
-            creep.moveTo(target, {'visualizePathStyle': {'stroke': '#ffffff'}})
+    if creep.memory.filling:
+        Action.gather(creep)
+    else:
+        Action.build(creep)

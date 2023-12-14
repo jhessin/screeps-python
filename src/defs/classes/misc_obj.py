@@ -38,6 +38,7 @@ class RoomObject:
     :type pos: RoomPosition
     :type room: Room
     """
+    id: str = ''
 
     def __init__(self, effects: _Effect, pos: RoomPosition, room: Room) -> None:
         """
