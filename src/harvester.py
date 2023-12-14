@@ -31,7 +31,7 @@ def run_harvester(creep):
             source = Game.getObjectById(creep.memory.source)
         else:
             # Get a random new source and save it
-            source = _.sample(creep.room.find(FIND_SOURCES))
+            source = creep.pos.findClosestByPath(FIND_SOURCES)
             creep.memory.source = source.id
 
         # If we're near the source, harvest it - otherwise, move to it.
@@ -40,17 +40,20 @@ def run_harvester(creep):
             if result != OK:
                 print("[{}] Unknown result from creep.harvest({}): {}".format(creep.name, source, result))
         else:
-            creep.moveTo(source)
+            creep.moveTo(source, {'visualizePathStyle': {'stroke': '#ffaa00'}})
     else:
         # If we have a saved target, use it
         if creep.memory.target:
             target = Game.getObjectById(creep.memory.target)
         else:
             # Get a random new target.
-            target = _(creep.room.find(FIND_STRUCTURES)) \
-                .filter(lambda s: ((s.structureType == STRUCTURE_SPAWN or s.structureType == STRUCTURE_EXTENSION)
-                                   and s.energy < s.energyCapacity) or s.structureType == STRUCTURE_CONTROLLER) \
-                .sample()
+            construction_site = creep.pos.findClosestByPath(FIND_CONSTRUCTION_SITES)
+
+            target = construction_site if construction_site else creep.pos.findClosestByPath(FIND_STRUCTURES, {
+                filter: lambda s: (
+                        (
+                                (s.structureType == STRUCTURE_SPAWN or s.structureType == STRUCTURE_EXTENSION)
+                                and s.energy < s.energyCapacity) or s.structureType == STRUCTURE_CONTROLLER)})
             creep.memory.target = target.id
 
         # If we are targeting a spawn or extension, we need to be directly next to it - otherwise, we can be 3 away.
@@ -71,10 +74,13 @@ def run_harvester(creep):
             else:
                 result = creep.upgradeController(target)
                 if result != OK:
-                    print("[{}] Unknown result from creep.upgradeController({}): {}".format(
-                        creep.name, target, result))
+                    # This is not a controller.
+                    result = creep.build(target)
+                    if result != OK:
+                        print("[{}] Unknown result from creep.upgradeController({}): {}".format(
+                            creep.name, target, result))
                 # Let the creeps get a little bit closer than required to the controller, to make room for other creeps.
                 if not creep.pos.inRangeTo(target, 2):
-                    creep.moveTo(target)
+                    creep.moveTo(target, {'visualizePathStyle': {'stroke': '#ffffff'}})
         else:
-            creep.moveTo(target)
+            creep.moveTo(target, {'visualizePathStyle': {'stroke': '#ffffff'}})

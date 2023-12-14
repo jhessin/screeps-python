@@ -16,6 +16,7 @@ class _Effect:  # type: List[_Effect]
     :type level: int
     :type ticksRemaining: int
     """
+
     def __init__(self, effect: int, level: Optional[int], ticksRemaining: int):
         """
         WARNING: This constructor is purely for type completion, and does not exist in the game.
@@ -38,13 +39,13 @@ class RoomObject:
     :type room: Room
     """
 
-    def __init__(self, effects: _Effect,  pos: RoomPosition, room: Room) -> None:
+    def __init__(self, effects: _Effect, pos: RoomPosition, room: Room) -> None:
         """
         WARNING: This constructor is purely for type completion, and does not exist in the game.
         """
-        self.effects = effects
-        self.pos = pos
-        self.room = room
+        self.effects: _Effect = effects
+        self.pos: RoomPosition = pos
+        self.room: Room = room
 
 
 # noinspection PyPep8Naming
@@ -96,7 +97,8 @@ class Source(RoomObject):
     :type ticksToRegeneration: int
     """
 
-    def __init__(self, effects: _Effect, pos: RoomPosition, room: Optional[Room], energy: int, energyCapacity: int, _id: str,
+    def __init__(self, effects: _Effect, pos: RoomPosition, room: Optional[Room], energy: int, energyCapacity: int,
+                 _id: str,
                  ticksToRegeneration: int) -> None:
         """
         WARNING: This constructor is purely for type completion, and does not exist in the game.
@@ -118,7 +120,8 @@ class Mineral(RoomObject):
     :type ticksToRegeneration: int
     """
 
-    def __init__(self, effects: _Effect, pos: RoomPosition, room: Optional[Room], density: int, mineralAmount: int, mineralType: str,
+    def __init__(self, effects: _Effect, pos: RoomPosition, room: Optional[Room], density: int, mineralAmount: int,
+                 mineralType: str,
                  _id: str, ticksToRegeneration: int) -> None:
         """
         WARNING: This constructor is purely for type completion, and does not exist in the game.
@@ -155,6 +158,7 @@ class Store:
     """
     WARNING: This constructor is purely for type completion, and does not exist in the game.
     """
+
     def getCapacity(self, resource: str = None) -> Union[Dict[str, int], int]:
         pass
 

@@ -1,0 +1,12 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+transcrypt = {ref = "screeps-transcrypt-0.3.3", git = "git+https://github.com/daboross/Transcrypt.git"}
+
+[dev-packages]
+
+[requires]
+python_version = "3.11"
