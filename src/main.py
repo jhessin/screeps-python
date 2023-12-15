@@ -25,7 +25,12 @@ def main():
     # Run each creep
     for name in Object.keys(Game.creeps):
         creep = Game.creeps[name]
-        harvester.run_harvester(creep)
+        if not creep:
+            del Game.creeps[name]
+        if creep.memory.role == 'builder':
+            harvester.run_builder(creep)
+        else:
+            harvester.run_harvester(creep)
 
     # Run each spawn
     for name in Object.keys(Game.spawns):
@@ -34,16 +39,24 @@ def main():
             # Get the number of our creeps in the room.
             num_creeps = _.sum(Game.creeps, lambda c: c.pos.roomName == spawn.pos.roomName)
             # If there are no creeps, spawn a creep once energy is at 250 or more
+            # always keep at least 2 harvesters.
+            role = 'harvester' if num_creeps < 2 else 'builder'
             if num_creeps < 0 and spawn.room.energyAvailable >= 250:
-                spawn.createCreep([WORK, CARRY, MOVE, MOVE])
+                spawn.createCreep([WORK, CARRY, MOVE, MOVE], None, {
+                    'role': role
+                })
             # If there are less than 15 creeps but at least one, wait until all spawns and extensions are full before
             # spawning.
             elif num_creeps < 15 and spawn.room.energyAvailable >= spawn.room.energyCapacityAvailable:
                 # If we have more energy, spawn a bigger creep.
                 if spawn.room.energyCapacityAvailable >= 350:
-                    spawn.createCreep([WORK, CARRY, CARRY, MOVE, MOVE, MOVE])
+                    spawn.createCreep([WORK, CARRY, CARRY, MOVE, MOVE, MOVE], None, {
+                        'role': role
+                    })
                 else:
-                    spawn.createCreep([WORK, CARRY, MOVE, MOVE])
+                    spawn.createCreep([WORK, CARRY, MOVE, MOVE], None, {
+                        'role': role
+                    })
 
 
 module.exports.loop = main
